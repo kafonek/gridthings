@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "gridthings"
+version = "0.1.0"
+description = "Python library for working with Grid-like structures (e.g. tic-tac-toe)"
+authors = ["Matt Kafonek <kafonek@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+pydantic = "^1.8.2"
+
+[tool.poetry.dev-dependencies]
+tox = "^3.24.4"
+mypy = "^0.910"
+pre-commit = "^2.16.0"
+isort = "^5.10.1"
+black = "^21.12b0"
+pytest = "^6.2.5"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

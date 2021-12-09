@@ -1,12 +1,7 @@
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Type, Union
 
-from pydantic import BaseModel
-
-
-class Cell(BaseModel):
-    x: int
-    y: int
-    value: Any
+from .cell import Cell, OutOfBoundsCell
+from .row import Row
 
 
 class Grid:
@@ -16,14 +11,16 @@ class Grid:
         strip_whitespace: bool = True,
         line_sep: str = "\n",
         sep: Optional[str] = None,
+        out_of_bounds_value: Optional[Any] = None,
+        cell_cls: Type[Cell] = Cell,
     ) -> None:
         """
         Instantiate a Grid object from one of several data formats.
 
-        1. a dictionary of dictionaries, e.g. df.to_dict()
-        2. a list of dictionaries, e.g. df.to_dict(orient='records')
+        1. a dictionary of dictionaries, e.g. from df.to_dict()
+        2. a list of dictionaries, e.g. from df.to_dict(orient='records')
         3. a string with line breaks, e.g. 'abc\ndef'
-        4. a string with line breaks and a separator, e.g. 'a,b,c\nd,e,f'
+        4. a string with line breaks and in-line separator, e.g. 'a,b,c\nd,e,f'
 
         line_sep and sep only apply when data is a string.
         line_sep is for the break between lines
@@ -39,14 +36,14 @@ class Grid:
                 for y_pos, value in row_data.items():
                     if y_pos not in self.data:
                         self.data[y_pos] = {}
-                    self.data[y_pos][x_pos] = Cell(x=x_pos, y=y_pos, value=value)
+                    self.data[y_pos][x_pos] = cell_cls(y=y_pos, x=x_pos, value=value)
 
         elif isinstance(data, list):
             for y_pos, column_data in enumerate(data):
                 if y_pos not in self.data:
                     self.data[y_pos] = {}
                 for x_pos, value in column_data.items():
-                    self.data[y_pos][x_pos] = Cell(x=x_pos, y=y_pos, value=value)
+                    self.data[y_pos][x_pos] = cell_cls(y=y_pos, x=x_pos, value=value)
 
         elif isinstance(data, str):
             if strip_whitespace:
@@ -61,4 +58,82 @@ class Grid:
                     # although it should recognize I just care about it being Iterable...
                     line = line.split(sep)  # type: ignore
                 for x_pos, value in enumerate(line):
-                    self.data[y_pos][x_pos] = Cell(x=x_pos, y=y_pos, value=value)
+                    self.data[y_pos][x_pos] = cell_cls(y=y_pos, x=x_pos, value=value)
+
+        # -- done data init --
+        # these two variables are used in conjunction with "active" methods
+        # like self.enter(x, y) / self.xrows() / self.peek()
+        self.active_x: Optional[int] = None
+        self.active_y: Optional[int] = None
+
+        # Default value for OutOfBound cells
+        # returned from active methods like .peek()
+        self.out_of_bounds_value = out_of_bounds_value
+
+    def enter(self, y: int, x: int) -> Cell:
+        "Set x and y position to x and y"
+        self.active_x = x
+        self.active_y = y
+        return self.data[y][x]
+
+    def active(func):
+        def wrapper(self, *args, **kwargs):
+            if self.active_x is None or self.active_y is None:
+                raise ValueError("Active position must be set first with .enter(x, y)")
+            return func(self, *args, **kwargs)
+
+        return wrapper
+
+    # Not sure how to make mypy okay with decorators
+    @active  # type: ignore
+    def active_row(self) -> Row:
+        "Return a list of all cells on the same row as the active position"
+        cells = list(self.data[self.active_y].values())  # type: ignore
+        return Row(cells=cells)
+
+    @active  # type: ignore
+    def active_column(self) -> Row:
+        "Return a list of all cells on the same column as the active position"
+        cells = [self.data[y][self.active_x] for y in self.data]  # type: ignore
+        return Row(cells=cells)
+
+    @active  # type: ignore
+    def peek(self, y_offset: int, x_offset: int) -> Cell:
+        "Return a Cell object at the active position plus the offsets"
+        # mypy thinks this is None + int because it doesn't understand that
+        # this can only occur after self.active_x/y are set (from @active decorator)
+        y = self.active_y + y_offset  # type: ignore
+        x = self.active_x + x_offset  # type: ignore
+        if y not in self.data or x not in self.data[y]:
+            return OutOfBoundsCell(y=y, x=x, value=self.out_of_bounds_value)
+        return self.data[y][x]
+
+    @active  # type: ignore
+    def peek_left(self, distance: int = 1) -> Cell:
+        "Return a Cell object to the left of the active position"
+        return self.peek(y_offset=0, x_offset=-distance)
+
+    @active  # type: ignore
+    def peek_right(self, distance: int = 1) -> Cell:
+        "Return a Cell object to the right of the active position"
+        return self.peek(y_offset=0, x_offset=distance)
+
+    @active  # type: ignore
+    def peek_up(self, distance: int = 1) -> Cell:
+        "Return a Cell object above the active position"
+        return self.peek(y_offset=-distance, x_offset=0)
+
+    @active  # type: ignore
+    def peek_down(self, distance: int = 1) -> Cell:
+        "Return a Cell object below the active position"
+        return self.peek(y_offset=distance, x_offset=0)
+
+    @active  # type: ignore
+    def peek_linear(self, distance: int = 1) -> List[Cell]:
+        "Return peek_left, peek_right, peek_up, and peek_down"
+        return [
+            self.peek_left(distance),
+            self.peek_right(distance),
+            self.peek_up(distance),
+            self.peek_down(distance),
+        ]

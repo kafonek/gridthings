@@ -17,19 +17,19 @@ def test_init_by_dict() -> None:
     grid = Grid(data)
     assert grid.data == {
         0: {
-            0: Cell(x=0, y=0, value="a"),
-            1: Cell(x=1, y=0, value="b"),
-            2: Cell(x=2, y=0, value="c"),
+            0: Cell(y=0, x=0, value="a"),
+            1: Cell(y=1, x=0, value="b"),
+            2: Cell(y=2, x=0, value="c"),
         },
         1: {
-            0: Cell(x=0, y=1, value="d"),
-            1: Cell(x=1, y=1, value="e"),
-            2: Cell(x=2, y=1, value="f"),
+            0: Cell(y=0, x=1, value="d"),
+            1: Cell(y=1, x=1, value="e"),
+            2: Cell(y=2, x=1, value="f"),
         },
         2: {
-            0: Cell(x=0, y=2, value="x"),
-            1: Cell(x=1, y=2, value="y"),
-            2: Cell(x=2, y=2, value="z"),
+            0: Cell(y=0, x=2, value="x"),
+            1: Cell(y=1, x=2, value="y"),
+            2: Cell(y=2, x=2, value="z"),
         },
     }
 
@@ -45,19 +45,19 @@ def test_init_by_list() -> None:
     print(grid.data)
     assert grid.data == {
         0: {
-            0: Cell(x=0, y=0, value="a"),
-            1: Cell(x=1, y=0, value="b"),
-            2: Cell(x=2, y=0, value="c"),
+            0: Cell(y=0, x=0, value="a"),
+            1: Cell(y=1, x=0, value="b"),
+            2: Cell(y=2, x=0, value="c"),
         },
         1: {
-            0: Cell(x=0, y=1, value="d"),
-            1: Cell(x=1, y=1, value="e"),
-            2: Cell(x=2, y=1, value="f"),
+            0: Cell(y=0, x=1, value="d"),
+            1: Cell(y=1, x=1, value="e"),
+            2: Cell(y=2, x=1, value="f"),
         },
         2: {
-            0: Cell(x=0, y=2, value="x"),
-            1: Cell(x=1, y=2, value="y"),
-            2: Cell(x=2, y=2, value="z"),
+            0: Cell(y=0, x=2, value="x"),
+            1: Cell(y=1, x=2, value="y"),
+            2: Cell(y=2, x=2, value="z"),
         },
     }
 
@@ -67,19 +67,19 @@ def test_init_by_str() -> None:
     grid = Grid(data)
     assert grid.data == {
         0: {
-            0: Cell(x=0, y=0, value="a"),
-            1: Cell(x=1, y=0, value="b"),
-            2: Cell(x=2, y=0, value="c"),
+            0: Cell(y=0, x=0, value="a"),
+            1: Cell(y=1, x=0, value="b"),
+            2: Cell(y=2, x=0, value="c"),
         },
         1: {
-            0: Cell(x=0, y=1, value="d"),
-            1: Cell(x=1, y=1, value="e"),
-            2: Cell(x=2, y=1, value="f"),
+            0: Cell(y=0, x=1, value="d"),
+            1: Cell(y=1, x=1, value="e"),
+            2: Cell(y=2, x=1, value="f"),
         },
         2: {
-            0: Cell(x=0, y=2, value="x"),
-            1: Cell(x=1, y=2, value="y"),
-            2: Cell(x=2, y=2, value="z"),
+            0: Cell(y=0, x=2, value="x"),
+            1: Cell(y=1, x=2, value="y"),
+            2: Cell(y=2, x=2, value="z"),
         },
     }
 
@@ -93,19 +93,19 @@ def test_init_by_str_with_whitespace() -> None:
     grid = Grid(data)
     assert grid.data == {
         0: {
-            0: Cell(x=0, y=0, value="a"),
-            1: Cell(x=1, y=0, value="b"),
-            2: Cell(x=2, y=0, value="c"),
+            0: Cell(y=0, x=0, value="a"),
+            1: Cell(y=1, x=0, value="b"),
+            2: Cell(y=2, x=0, value="c"),
         },
         1: {
-            0: Cell(x=0, y=1, value="d"),
-            1: Cell(x=1, y=1, value="e"),
-            2: Cell(x=2, y=1, value="f"),
+            0: Cell(y=0, x=1, value="d"),
+            1: Cell(y=1, x=1, value="e"),
+            2: Cell(y=2, x=1, value="f"),
         },
         2: {
-            0: Cell(x=0, y=2, value="x"),
-            1: Cell(x=1, y=2, value="y"),
-            2: Cell(x=2, y=2, value="z"),
+            0: Cell(y=0, x=2, value="x"),
+            1: Cell(y=1, x=2, value="y"),
+            2: Cell(y=2, x=2, value="z"),
         },
     }
 
@@ -119,18 +119,18 @@ def test_init_by_str_with_whitespace_and_sep() -> None:
     grid = Grid(data, sep=",")
     assert grid.data == {
         0: {
-            0: Cell(x=0, y=0, value="a"),
-            1: Cell(x=1, y=0, value="b"),
-            2: Cell(x=2, y=0, value="c"),
+            0: Cell(y=0, x=0, value="a"),
+            1: Cell(y=1, x=0, value="b"),
+            2: Cell(y=2, x=0, value="c"),
         },
         1: {
-            0: Cell(x=0, y=1, value="d"),
-            1: Cell(x=1, y=1, value="e"),
-            2: Cell(x=2, y=1, value="f"),
+            0: Cell(y=0, x=1, value="d"),
+            1: Cell(y=1, x=1, value="e"),
+            2: Cell(y=2, x=1, value="f"),
         },
         2: {
-            0: Cell(x=0, y=2, value="x"),
-            1: Cell(x=1, y=2, value="y"),
-            2: Cell(x=2, y=2, value="z"),
+            0: Cell(y=0, x=2, value="x"),
+            1: Cell(y=1, x=2, value="y"),
+            2: Cell(y=2, x=2, value="z"),
         },
     }

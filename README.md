@@ -1,6 +1,8 @@
 # gridthings
 Python library for doing things with Grid-like structures
 
+[![Tests](https://github.com/kafonek/gridthings/actions/workflows/run-tests.yaml/badge.svg)](https://github.com/kafonek/gridthings/actions/workflows/run-tests.yaml)
+
 
 ## Development
 

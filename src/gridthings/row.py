@@ -25,3 +25,6 @@ class Row(BaseModel, collections.abc.Sequence):
             if cell.value == value:
                 return i
         raise ValueError(f"{value} is not in row")
+
+    def values(self) -> List[Any]:
+        return [cell.value for cell in self.cells]

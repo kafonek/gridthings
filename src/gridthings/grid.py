@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from .cell import Cell, OutOfBoundsCell
 from .row import Row
@@ -84,6 +84,14 @@ class Grid:
         # returned from active methods like .peek()
         self.out_of_bounds_value = out_of_bounds_value
 
+    @property
+    def shape(self) -> Tuple[int, int]:
+        "Return the shape of the grid"
+        return len(self.data), len(self.data[0])
+
+    def __repr__(self):
+        return f"<{self.__class__.__name__} shape={self.shape}>"
+
     def flatten(self) -> List[Cell]:
         "Flatten the grid into a list of Cells going left to right (rows) then top to bottom (columns)"
         cells = []
@@ -163,3 +171,21 @@ class Grid:
             self.peek_up(distance),
             self.peek_down(distance),
         ]
+
+    @active  # type: ignore
+    def peek_diagonal(self, distance: int = 1) -> List[Cell]:
+        "Return peek diagonal up/left, up/right, down/left, down/right"
+        return [
+            self.peek(y_offset=-distance, x_offset=-distance),
+            self.peek(y_offset=-distance, x_offset=distance),
+            self.peek(y_offset=distance, x_offset=-distance),
+            self.peek(y_offset=distance, x_offset=distance),
+        ]
+
+    @active  # type: ignore
+    def line(self, y_step: int = 0, x_step: int = 0, distance: int = 1) -> Row:
+        "Return a Row of cells in a line from the active position"
+        cells = []
+        for offset in range(distance):
+            cells.append(self.peek(y_offset=offset * y_step, x_offset=offset * x_step))
+        return Row(cells=cells)

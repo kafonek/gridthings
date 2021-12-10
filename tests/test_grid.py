@@ -236,10 +236,17 @@ def test_peek():
     grid = Grid(data)
     grid.enter(1, 1)
     assert grid.peek(y_offset=0, x_offset=0) == Cell(y=1, x=1, value="e")
+    assert grid.peek(y_offset=-1, x_offset=-1) == Cell(y=0, x=0, value="a")
     assert grid.peek_left() == Cell(y=1, x=0, value="d")
     assert grid.peek_right() == Cell(y=1, x=2, value="f")
     assert grid.peek_up() == Cell(y=0, x=1, value="b")
     assert grid.peek_down() == Cell(y=2, x=1, value="y")
+
+
+def test_peek_linear():
+    data = "abc\ndef\nxyz"
+    grid = Grid(data)
+    grid.enter(1, 1)
     assert grid.peek_linear() == [
         Cell(y=1, x=0, value="d"),
         Cell(y=1, x=2, value="f"),
@@ -247,11 +254,64 @@ def test_peek():
         Cell(y=2, x=1, value="y"),
     ]
 
-    assert grid.peek(y_offset=-1, x_offset=-1) == Cell(y=0, x=0, value="a")
 
+def test_peek_diagonal():
+    data = "abc\ndef\nxyz"
+    grid = Grid(data)
+    grid.enter(1, 1)
+    assert grid.peek_diagonal() == [
+        Cell(y=0, x=0, value="a"),
+        Cell(y=0, x=2, value="c"),
+        Cell(y=2, x=0, value="x"),
+        Cell(y=2, x=2, value="z"),
+    ]
+
+
+def test_peek_out_of_bounds():
+    data = "abc\ndef\nxyz"
+    grid = Grid(data)
+    grid.enter(1, 1)
     out_of_bounds_cell = grid.peek(y_offset=-2, x_offset=0)
     assert isinstance(out_of_bounds_cell, OutOfBoundsCell)
     assert out_of_bounds_cell == OutOfBoundsCell(y=-1, x=1, value=None)
+
+
+def test_line():
+    data = "abc\ndef\nxyz"
+    grid = Grid(data)
+    grid.enter(0, 0)
+    assert grid.line(y_step=0, x_step=1, distance=3) == Row(
+        cells=[
+            Cell(y=0, x=0, value="a"),
+            Cell(y=0, x=1, value="b"),
+            Cell(y=0, x=2, value="c"),
+        ]
+    )
+    assert grid.line(y_step=1, x_step=0, distance=3) == Row(
+        cells=[
+            Cell(y=0, x=0, value="a"),
+            Cell(y=1, x=0, value="d"),
+            Cell(y=2, x=0, value="x"),
+        ]
+    )
+    assert grid.line(y_step=1, x_step=1, distance=3) == Row(
+        cells=[
+            Cell(y=0, x=0, value="a"),
+            Cell(y=1, x=1, value="e"),
+            Cell(y=2, x=2, value="z"),
+        ]
+    )
+
+
+def test_line_out_of_bounds():
+    data = "abc\ndef\nxyz"
+    grid = Grid(data)
+    grid.enter(0, 0)
+    row = grid.line(y_step=-1, distance=2)
+    assert row == Row(
+        cells=[Cell(y=0, x=0, value="a"), OutOfBoundsCell(y=-1, x=0, value=None)]
+    )
+    assert row.extends_out_of_bounds()
 
 
 def test_default_out_of_bounds_value():

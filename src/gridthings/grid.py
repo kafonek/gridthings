@@ -1,10 +1,19 @@
-from typing import Any, Dict, List, Optional, Type, Union
+from typing import Any, Dict, List, Optional, Union
 
 from .cell import Cell, OutOfBoundsCell
 from .row import Row
 
+# A Grid represents some tabular data, the kind of thing you might analyze in Pandas
+# This library is about letting you accomplish tasks that may be confusing or
+# difficult in frameworks like Pandas.  For instance, getting the neighboring
+# values of a specific point, or cell with minimum value in a diagonal row
+#
+# See typed_grids.py for Grids with data validation
+
 
 class Grid:
+    cell_cls = Cell
+
     def __init__(
         self,
         data: Union[Dict[int, Dict[int, Any]], List[Dict[int, Any]], str],
@@ -12,7 +21,6 @@ class Grid:
         line_sep: str = "\n",
         sep: Optional[str] = None,
         out_of_bounds_value: Optional[Any] = None,
-        cell_cls: Type[Cell] = Cell,
     ) -> None:
         """
         Instantiate a Grid object from one of several data formats.
@@ -36,14 +44,18 @@ class Grid:
                 for y_pos, value in row_data.items():
                     if y_pos not in self.data:
                         self.data[y_pos] = {}
-                    self.data[y_pos][x_pos] = cell_cls(y=y_pos, x=x_pos, value=value)
+                    self.data[y_pos][x_pos] = self.cell_cls(
+                        y=y_pos, x=x_pos, value=value
+                    )
 
         elif isinstance(data, list):
             for y_pos, column_data in enumerate(data):
                 if y_pos not in self.data:
                     self.data[y_pos] = {}
                 for x_pos, value in column_data.items():
-                    self.data[y_pos][x_pos] = cell_cls(y=y_pos, x=x_pos, value=value)
+                    self.data[y_pos][x_pos] = self.cell_cls(
+                        y=y_pos, x=x_pos, value=value
+                    )
 
         elif isinstance(data, str):
             if strip_whitespace:
@@ -58,7 +70,9 @@ class Grid:
                     # although it should recognize I just care about it being Iterable...
                     line = line.split(sep)  # type: ignore
                 for x_pos, value in enumerate(line):
-                    self.data[y_pos][x_pos] = cell_cls(y=y_pos, x=x_pos, value=value)
+                    self.data[y_pos][x_pos] = self.cell_cls(
+                        y=y_pos, x=x_pos, value=value
+                    )
 
         # -- done data init --
         # these two variables are used in conjunction with "active" methods
@@ -69,6 +83,18 @@ class Grid:
         # Default value for OutOfBound cells
         # returned from active methods like .peek()
         self.out_of_bounds_value = out_of_bounds_value
+
+    def flatten(self) -> List[Cell]:
+        "Flatten the grid into a list of Cells going left to right (rows) then top to bottom (columns)"
+        cells = []
+        for row in self.data.values():
+            for cell in row.values():
+                cells.append(cell)
+        return cells
+
+    def values(self) -> List[Any]:
+        "Return just the values of Cells going left to right (rows) then top to bottom (columns)"
+        return [cell.value for cell in self.flatten()]
 
     def enter(self, y: int, x: int) -> Cell:
         "Set x and y position to x and y"

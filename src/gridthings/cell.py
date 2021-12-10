@@ -1,4 +1,3 @@
-import functools
 from typing import Any
 
 from pydantic import BaseModel
@@ -13,7 +12,6 @@ from pydantic import BaseModel
 # offer things like min(Row), max(Row) and math.prod(Row)
 
 
-@functools.total_ordering
 class Cell(BaseModel):
     y: int
     x: int
@@ -21,13 +19,36 @@ class Cell(BaseModel):
 
     def __eq__(self, other: Any) -> bool:
         if isinstance(other, Cell):
-            return self.value == other.value
+            return self.dict() == other.dict()
         return self.value == other
+
+    def __ne__(self, other: Any) -> bool:
+        if isinstance(other, Cell):
+            return self.dict() != other.dict()
+        return self.value != other
 
     def __lt__(self, other: Any) -> bool:
         if isinstance(other, Cell):
             return self.value < other.value
         return self.value < other
+
+    def __le__(self, other: Any) -> bool:
+        if isinstance(other, Cell):
+            return self.value <= other.value
+        else:
+            return self.value <= other
+
+    def __gt__(self, other: Any) -> bool:
+        if isinstance(other, Cell):
+            return self.value > other.value
+        else:
+            return self.value > other
+
+    def __ge__(self, other: Any) -> bool:
+        if isinstance(other, Cell):
+            return self.value >= other.value
+        else:
+            return self.value >= other
 
     def __add__(self, other: Any) -> Any:
         if isinstance(other, Cell):

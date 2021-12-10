@@ -9,7 +9,7 @@ from gridthings import Cell
 def test_cell_when_equal():
     c1 = Cell(y=0, x=0, value="foo")
     c2 = Cell(y=0, x=1, value="foo")
-    assert c1 == c2
+    assert c1 != c2
     assert c1 >= c2
     assert c2 >= c1
     assert c1 <= c2

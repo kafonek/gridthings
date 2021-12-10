@@ -3,7 +3,7 @@ from typing import Any, List
 
 from pydantic import BaseModel
 
-from .cell import Cell
+from .cell import Cell, OutOfBoundsCell
 
 
 class Row(BaseModel, collections.abc.Sequence):
@@ -28,3 +28,6 @@ class Row(BaseModel, collections.abc.Sequence):
 
     def values(self) -> List[Any]:
         return [cell.value for cell in self.cells]
+
+    def extends_out_of_bounds(self):
+        return any(isinstance(cell, OutOfBoundsCell) for cell in self.cells)

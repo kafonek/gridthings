@@ -1,7 +1,7 @@
 # gridthings
 Python library for doing things with Grid-like structures
 
-[![Tests](https://github.com/kafonek/gridthings/actions/workflows/run-tests.yaml/badge.svg)](https://github.com/kafonek/gridthings/actions/workflows/run-tests.yaml) [![Coverage Status](https://coveralls.io/repos/github/kafonek/gridthings/badge.svg?branch=main)](https://coveralls.io/github/kafonek/gridthings?branch=main)
+[![Tests](https://github.com/kafonek/gridthings/actions/workflows/run-tests.yaml/badge.svg)](https://github.com/kafonek/gridthings/actions/workflows/run-tests.yaml) [![Coverage Status](https://coveralls.io/repos/github/kafonek/gridthings/badge.svg?branch=main)](https://coveralls.io/github/kafonek/gridthings?branch=main) [![PyPI version](https://badge.fury.io/py/gridthings.svg)](https://badge.fury.io/py/gridthings)
 
 ## Use-Cases
 

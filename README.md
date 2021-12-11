@@ -12,6 +12,8 @@ Python library for doing things with Grid-like structures
 
 ## Example
 
+See the `./examples` directory for solutions to a few puzzles with comments about how `gridthings` helps solve them.
+
 ```python
 import gridthings
 

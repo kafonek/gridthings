@@ -23,12 +23,23 @@ jobs:
           python -VV
           python -m site
           python -m pip install --upgrade pip setuptools wheel
-          python -m pip install --upgrade poetry tox tox-gh-actions coveralls[toml]
+          python -m pip install --upgrade poetry tox tox-gh-actions
 
       - name: "Run Tests"
         run: python -m tox
 
       - name: "Upload coverage to coveralls.io"
-        run: coveralls
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: AndreMiras/coveralls-python-action@v20201129
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          debug: true
+
+  coveralls-finish:
+    needs: tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Coveralls finished
+        uses: AndreMiras/coveralls-python-action@v20201129
+        with:
+          debug: true

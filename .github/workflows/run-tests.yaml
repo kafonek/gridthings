@@ -28,9 +28,6 @@ jobs:
       - name: "Run Tests"
         run: python -m tox
 
-      - name: "Run Linting"
-        run: python -m tox -e lint
-
       - name: "Upload coverage to coveralls.io"
         run: coveralls
         env:

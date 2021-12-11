@@ -58,7 +58,7 @@ max(grid.peek_diagonal(1, 1))
 This project uses [poetry](https://python-poetry.org/) for dependency management, [pre-commit](https://pre-commit.com/) for linting at commit, [pytest](https://docs.pytest.org/) as a test framework, and [tox](https://github.com/tox-dev/tox) for running tests locally and on Github Actions (CI/CD).  To get started developing against this library, you'll need to be able to install `poetry`, then use `poetry install` and `pre-commit install`.
 
 1. `pip install poetry` on your system Python if it doesn't exist
-2. `poetry install`
+2. `poetry install`, or `poetry install -E examples` to include Jupyter and pandas, used in the example notebooks
 3. `poetry shell` to activate the poetry environment created at `.venv`
 4. `pre-commit install --install-hooks`
 

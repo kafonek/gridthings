@@ -8,6 +8,10 @@ on:
     branches:
       - main
 
+  # also run manually from Actions tab
+  workflow_dispatch:
+
+
 jobs:
   tests:
     name: "tox"

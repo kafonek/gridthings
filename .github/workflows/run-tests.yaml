@@ -24,10 +24,17 @@ jobs:
           python -m site
           python -m pip install --upgrade pip setuptools wheel
           python -m pip install --upgrade poetry tox tox-gh-actions
-      - name: "Run tox"
-        run: "python -m tox"
+
+      - name: "Install project"
+        run: poetry install
+
+      - name: "Run Tests"
+        run: poetry run tox
+
+      - name: "Run Linting"
+        run: poetry run tox -e lint
 
       - name: "Upload coverage to coveralls.io"
-        run: coveralls.io"
+        run: coveralls
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

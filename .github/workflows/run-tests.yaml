@@ -26,3 +26,8 @@ jobs:
           python -m pip install --upgrade poetry tox tox-gh-actions
       - name: "Run tox"
         run: "python -m tox"
+
+      - name: "Upload coverage to coveralls.io"
+        run: coveralls.io"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

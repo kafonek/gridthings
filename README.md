@@ -3,6 +3,53 @@ Python library for doing things with Grid-like structures
 
 [![Tests](https://github.com/kafonek/gridthings/actions/workflows/run-tests.yaml/badge.svg)](https://github.com/kafonek/gridthings/actions/workflows/run-tests.yaml)
 
+## Use-Cases
+
+ - Read grid-like data in multiple formats, including string, and easily export to DataFrames
+ - Solve puzzles like [largest product in a grid](https://projecteuler.net/problem=11) and [low points in a grid](https://adventofcode.com/2021/day/9)
+ - Build board games like tic-tac-toe, connect-four, and bingo
+ - Analyze tabular data in interesting new ways
+
+## Example
+
+```python
+import gridthings
+
+data = '''
+123
+456
+789
+'''
+
+grid = gridthings.IntGrid(data)
+grid
+<IntGrid shape=(3, 3)>
+
+import pandas
+df = pandas.DataFrame(grid.values())
+df
+>>>
+    0	1	2
+0	1	2	3
+1	4	5	6
+2	7	8	9
+
+grid.get(1, 1)
+>>> IntCell(y=1, x=1, value=5)
+
+grid.peek_linear(1, 1)
+>>> <Collection [[IntCell(y=1, x=0, value=4), IntCell(y=1, x=2, value=6), IntCell(y=0, x=1, value=2), IntCell(y=2, x=1, value=8)]]>
+
+sum(grid.peek_linear(1, 1))
+>>> 20
+
+max(grid.peek_linear(1, 1))
+>>> IntCell(y=2, x=1, value=8)
+
+max(grid.peek_diagonal(1, 1))
+>>> IntCell(y=2, x=2, value=9)
+```
+
 
 ## Development
 

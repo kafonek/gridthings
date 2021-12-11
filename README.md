@@ -31,10 +31,10 @@ import pandas
 df = pandas.DataFrame(grid.values())
 df
 >>>
-    0	1	2
-0	1	2	3
-1	4	5	6
-2	7	8	9
+        0	1	2
+    0	1	2	3
+    1	4	5	6
+    2	7	8	9
 
 grid.get(1, 1)
 >>> IntCell(y=1, x=1, value=5)

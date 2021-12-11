@@ -2,7 +2,11 @@
 name = "gridthings"
 version = "0.1.0"
 description = "Python library for working with Grid-like structures (e.g. tic-tac-toe)"
-authors = ["Matt Kafonek <kafonek@gmail.com>"]
+authors = ["Matt Kafonek <matt.kafonek@noteable.io>"]
+homepage = "https://github.com/kafonek/gridthings"
+repository = "https://github.com/kafonek/gridthings"
+license = "BSD-3-Clause"
+include = ["LICENSE"]
 
 [tool.poetry.dependencies]
 python = "^3.8"

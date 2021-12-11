@@ -1,7 +1,7 @@
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Type, Union
 
 from .cell import Cell, OutOfBoundsCell
-from .row import Row
+from .collection import Collection
 
 # A Grid represents some tabular data, the kind of thing you might analyze in Pandas
 # This library is about letting you accomplish tasks that may be confusing or
@@ -12,7 +12,11 @@ from .row import Row
 
 
 class Grid:
+    # These two _cls variables are here as entrypoints for customizing
+    # your Grid object, plugging in your own Cell or Collection mechanism
+    # They can also be inserted in init kwargs
     cell_cls = Cell
+    collection_cls = Collection
 
     def __init__(
         self,
@@ -21,6 +25,8 @@ class Grid:
         line_sep: str = "\n",
         sep: Optional[str] = None,
         out_of_bounds_value: Optional[Any] = None,
+        cell_cls: Type[Cell] = None,
+        collections_cls: Type[Collection] = None,
     ) -> None:
         """
         Instantiate a Grid object from one of several data formats.
@@ -35,6 +41,8 @@ class Grid:
         sep is for any in-line separator
         """
         self.data: Dict[int, Dict[int, Cell]] = {}
+        self.cell_cls = cell_cls or self.cell_cls
+        self.collection_cls = collections_cls or self.collection_cls
 
         # data is stored internally as y:x:value, following pandas style
         # can also think of it like row-data goes to the y position
@@ -74,15 +82,14 @@ class Grid:
                         y=y_pos, x=x_pos, value=value
                     )
 
-        # -- done data init --
-        # these two variables are used in conjunction with "active" methods
-        # like self.enter(x, y) / self.xrows() / self.peek()
-        self.active_x: Optional[int] = None
-        self.active_y: Optional[int] = None
-
-        # Default value for OutOfBound cells
-        # returned from active methods like .peek()
+        # Default value for OutOfBound cells when a Collection
+        # extends outside the grid, which can happen with .peek() and .line()
         self.out_of_bounds_value = out_of_bounds_value
+
+    @property
+    def is_regular(self) -> bool:
+        "Return True if all rows are the same length"
+        return all(len(row) == len(self.data[0]) for row in self.data.values())
 
     @property
     def shape(self) -> Tuple[int, int]:
@@ -90,102 +97,97 @@ class Grid:
         return len(self.data), len(self.data[0])
 
     def __repr__(self):
-        return f"<{self.__class__.__name__} shape={self.shape}>"
+        if self.is_regular:
+            return f"<{self.__class__.__name__} shape={self.shape}>"
+        else:
+            return f"<{self.__class__.__name__} shape=(irregular)>"
 
-    def flatten(self) -> List[Cell]:
-        "Flatten the grid into a list of Cells going left to right (rows) then top to bottom (columns)"
+    def get(self, y: int, x: int) -> Cell:
+        "Return a Cell object at a given y, x position"
+        return self.data[y][x]
+
+    def get_row(self, y: int) -> Collection:
+        "Return the y'th row. coll = grid.get_row(0) gives the top row of the grid"
+        cells = list(self.data[y].values())
+        return self.collection_cls(cells=cells)
+
+    def get_column(self, x: int) -> Collection:
+        "Return the x'th column. coll = grid.get_column(0) gives the left column of the grid"
+        cells = [row[x] for row in self.data.values()]
+        return self.collection_cls(cells=cells)
+
+    # Useful for iterating through every cell in the grid.  for cell in grid.flatten():
+    def flatten(self) -> Collection:
+        "Flatten the 2-d Grid into a 1-d Collection of cells"
         cells = []
         for row in self.data.values():
             for cell in row.values():
                 cells.append(cell)
-        return cells
+        return Collection(cells=cells)
 
-    def values(self) -> List[Any]:
-        "Return just the values of Cells going left to right (rows) then top to bottom (columns)"
-        return [cell.value for cell in self.flatten()]
+    # Primarily useful for integration to pandas: df = pandas.DataFrame(grid.values())
+    def values(self) -> List[List[Any]]:
+        "Return the grid as a list of lists"
+        return [[cell.value for cell in row.values()] for row in self.data.values()]
 
-    def enter(self, y: int, x: int) -> Cell:
-        "Set x and y position to x and y"
-        self.active_x = x
-        self.active_y = y
-        return self.data[y][x]
+    def peek(self, y: int, x: int, y_offset: int, x_offset: int) -> Cell:
+        "Return a Cell object offset from a given y, x position"
+        y_out = y + y_offset
+        x_out = x + x_offset
+        if y_out not in self.data or x_out not in self.data[y_out]:
+            return OutOfBoundsCell(y=y_out, x=x_out, value=self.out_of_bounds_value)
+        return self.data[y_out][x_out]
 
-    def active(func):
-        def wrapper(self, *args, **kwargs):
-            if self.active_x is None or self.active_y is None:
-                raise ValueError("Active position must be set first with .enter(x, y)")
-            return func(self, *args, **kwargs)
+    def peek_left(self, y: int, x: int, distance: int = 1) -> Cell:
+        "Return a Cell object to the left of a given y, x position"
+        return self.peek(y=y, x=x, y_offset=0, x_offset=-distance)
 
-        return wrapper
+    def peek_right(self, y: int, x: int, distance: int = 1) -> Cell:
+        "Return a Cell object to the right of a given y, x position"
+        return self.peek(y=y, x=x, y_offset=0, x_offset=distance)
 
-    # Not sure how to make mypy okay with decorators
-    @active  # type: ignore
-    def active_row(self) -> Row:
-        "Return a list of all cells on the same row as the active position"
-        cells = list(self.data[self.active_y].values())  # type: ignore
-        return Row(cells=cells)
+    def peek_up(self, y: int, x: int, distance: int = 1) -> Cell:
+        "Return a Cell object above a given y, x position"
+        return self.peek(y=y, x=x, y_offset=-distance, x_offset=0)
 
-    @active  # type: ignore
-    def active_column(self) -> Row:
-        "Return a list of all cells on the same column as the active position"
-        cells = [self.data[y][self.active_x] for y in self.data]  # type: ignore
-        return Row(cells=cells)
+    def peek_down(self, y: int, x: int, distance: int = 1) -> Cell:
+        "Return a Cell object below a given y, x position"
+        return self.peek(y=y, x=x, y_offset=distance, x_offset=0)
 
-    @active  # type: ignore
-    def peek(self, y_offset: int, x_offset: int) -> Cell:
-        "Return a Cell object at the active position plus the offsets"
-        # mypy thinks this is None + int because it doesn't understand that
-        # this can only occur after self.active_x/y are set (from @active decorator)
-        y = self.active_y + y_offset  # type: ignore
-        x = self.active_x + x_offset  # type: ignore
-        if y not in self.data or x not in self.data[y]:
-            return OutOfBoundsCell(y=y, x=x, value=self.out_of_bounds_value)
-        return self.data[y][x]
-
-    @active  # type: ignore
-    def peek_left(self, distance: int = 1) -> Cell:
-        "Return a Cell object to the left of the active position"
-        return self.peek(y_offset=0, x_offset=-distance)
-
-    @active  # type: ignore
-    def peek_right(self, distance: int = 1) -> Cell:
-        "Return a Cell object to the right of the active position"
-        return self.peek(y_offset=0, x_offset=distance)
-
-    @active  # type: ignore
-    def peek_up(self, distance: int = 1) -> Cell:
-        "Return a Cell object above the active position"
-        return self.peek(y_offset=-distance, x_offset=0)
-
-    @active  # type: ignore
-    def peek_down(self, distance: int = 1) -> Cell:
-        "Return a Cell object below the active position"
-        return self.peek(y_offset=distance, x_offset=0)
-
-    @active  # type: ignore
-    def peek_linear(self, distance: int = 1) -> List[Cell]:
-        "Return peek_left, peek_right, peek_up, and peek_down"
-        return [
-            self.peek_left(distance),
-            self.peek_right(distance),
-            self.peek_up(distance),
-            self.peek_down(distance),
+    def peek_linear(self, y: int, x: int, distance: int = 1) -> Collection:
+        "Return peek_left, peek_right, peek_up, and peek_down from a given y, x position"
+        cells = [
+            self.peek_left(y=y, x=x, distance=distance),
+            self.peek_right(y=y, x=x, distance=distance),
+            self.peek_up(y=y, x=x, distance=distance),
+            self.peek_down(y=y, x=x, distance=distance),
         ]
+        return self.collection_cls(cells=cells)
 
-    @active  # type: ignore
-    def peek_diagonal(self, distance: int = 1) -> List[Cell]:
-        "Return peek diagonal up/left, up/right, down/left, down/right"
-        return [
-            self.peek(y_offset=-distance, x_offset=-distance),
-            self.peek(y_offset=-distance, x_offset=distance),
-            self.peek(y_offset=distance, x_offset=-distance),
-            self.peek(y_offset=distance, x_offset=distance),
+    def peek_diagonal(self, y: int, x: int, distance: int = 1) -> Collection:
+        "Return peek diagonal up/left, up/right, down/left, down/right a given y, x position"
+        cells = [
+            self.peek(y=y, x=x, y_offset=-distance, x_offset=-distance),
+            self.peek(y=y, x=x, y_offset=-distance, x_offset=distance),
+            self.peek(y=y, x=x, y_offset=distance, x_offset=-distance),
+            self.peek(y=y, x=x, y_offset=distance, x_offset=distance),
         ]
+        return self.collection_cls(cells=cells)
 
-    @active  # type: ignore
-    def line(self, y_step: int = 0, x_step: int = 0, distance: int = 1) -> Row:
-        "Return a Row of cells in a line from the active position"
+    def peek_all(self, y: int, x: int, distance: int = 1) -> Collection:
+        "Return all cells around a given y, x position"
+        linear_neighbors = self.peek_linear(y=y, x=x, distance=distance)
+        diag_neighbors = self.peek_diagonal(y=y, x=x, distance=distance)
+        return linear_neighbors + diag_neighbors
+
+    def line(
+        self, y: int, x: int, y_step: int = 0, x_step: int = 0, distance: int = 1
+    ) -> Collection:
+        "Return a Collection of cells starting at a given y/x position and stepping for some distance"
         cells = []
         for offset in range(distance):
-            cells.append(self.peek(y_offset=offset * y_step, x_offset=offset * x_step))
-        return Row(cells=cells)
+            out_cell = self.peek(
+                y=y, x=x, y_offset=offset * y_step, x_offset=offset * x_step
+            )
+            cells.append(out_cell)
+        return self.collection_cls(cells=cells)

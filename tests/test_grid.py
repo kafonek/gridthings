@@ -1,6 +1,6 @@
 import pytest
 
-from gridthings import Cell, Grid, IntGrid, OutOfBoundsCell, Row
+from gridthings import Cell, Collection, Grid, IntGrid, OutOfBoundsCell
 
 # Test grid initilization ------------------------------------------------------
 # Imagine seed data generated from something like
@@ -144,23 +144,26 @@ def test_init_by_str_with_whitespace_and_sep() -> None:
 def test_flatten():
     data = "abc\ndef\nxyz"
     grid = Grid(data)
-    assert grid.flatten() == [
-        Cell(y=0, x=0, value="a"),
-        Cell(y=0, x=1, value="b"),
-        Cell(y=0, x=2, value="c"),
-        Cell(y=1, x=0, value="d"),
-        Cell(y=1, x=1, value="e"),
-        Cell(y=1, x=2, value="f"),
-        Cell(y=2, x=0, value="x"),
-        Cell(y=2, x=1, value="y"),
-        Cell(y=2, x=2, value="z"),
-    ]
+    flattened = grid.flatten()
+    assert grid.flatten() == Collection(
+        cells=[
+            Cell(y=0, x=0, value="a"),
+            Cell(y=0, x=1, value="b"),
+            Cell(y=0, x=2, value="c"),
+            Cell(y=1, x=0, value="d"),
+            Cell(y=1, x=1, value="e"),
+            Cell(y=1, x=2, value="f"),
+            Cell(y=2, x=0, value="x"),
+            Cell(y=2, x=1, value="y"),
+            Cell(y=2, x=2, value="z"),
+        ]
+    )
 
 
 def test_values():
     data = "abc\ndef\nxyz"
     grid = Grid(data)
-    assert grid.values() == ["a", "b", "c", "d", "e", "f", "x", "y", "z"]
+    assert grid.values() == [["a", "b", "c"], ["d", "e", "f"], ["x", "y", "z"]]
 
 
 # Typed grids -----------------------------------------------------------------
@@ -187,46 +190,39 @@ def test_intgrid_invalid():
         IntGrid(data)
 
 
-# Functions that require an active context ------------------------------------
-
-
-def test_enter():
-    data = "abc\ndef\nxyz"
+def test_get_row_and_col():
+    data = "abc\nxyz"
     grid = Grid(data)
-    top_left_cell = grid.enter(0, 0)
-    assert top_left_cell == Cell(y=0, x=0, value="a")
-
-    top_mid_cell = grid.enter(0, 1)
-    assert top_mid_cell == Cell(y=0, x=1, value="b")
-
-    mid_left_cell = grid.enter(1, 0)
-    assert mid_left_cell == Cell(y=1, x=0, value="d")
-
-
-def test_raise_error_when_missing_active_context():
-    data = "abc\ndef\nxyz"
-    grid = Grid(data)
-    with pytest.raises(ValueError):
-        grid.active_row()
-
-
-def test_get_active_row_and_col():
-    data = "abc\ndef\nxyz"
-    grid = Grid(data)
-    grid.enter(0, 0)
-    assert grid.active_row() == Row(
+    assert grid.get_row(0) == Collection(
         cells=[
             Cell(y=0, x=0, value="a"),
             Cell(y=0, x=1, value="b"),
             Cell(y=0, x=2, value="c"),
         ]
     )
-
-    assert grid.active_column() == Row(
+    assert grid.get_row(1) == Collection(
+        cells=[
+            Cell(y=1, x=0, value="x"),
+            Cell(y=1, x=1, value="y"),
+            Cell(y=1, x=2, value="z"),
+        ]
+    )
+    assert grid.get_column(0) == Collection(
         cells=[
             Cell(y=0, x=0, value="a"),
-            Cell(y=1, x=0, value="d"),
-            Cell(y=2, x=0, value="x"),
+            Cell(y=1, x=0, value="x"),
+        ]
+    )
+    assert grid.get_column(1) == Collection(
+        cells=[
+            Cell(y=0, x=1, value="b"),
+            Cell(y=1, x=1, value="y"),
+        ]
+    )
+    assert grid.get_column(2) == Collection(
+        cells=[
+            Cell(y=0, x=2, value="c"),
+            Cell(y=1, x=2, value="z"),
         ]
     )
 
@@ -234,44 +230,44 @@ def test_get_active_row_and_col():
 def test_peek():
     data = "abc\ndef\nxyz"
     grid = Grid(data)
-    grid.enter(1, 1)
-    assert grid.peek(y_offset=0, x_offset=0) == Cell(y=1, x=1, value="e")
-    assert grid.peek(y_offset=-1, x_offset=-1) == Cell(y=0, x=0, value="a")
-    assert grid.peek_left() == Cell(y=1, x=0, value="d")
-    assert grid.peek_right() == Cell(y=1, x=2, value="f")
-    assert grid.peek_up() == Cell(y=0, x=1, value="b")
-    assert grid.peek_down() == Cell(y=2, x=1, value="y")
+    assert grid.peek(y=0, x=0, y_offset=0, x_offset=0) == "a"
+    assert grid.peek(y=0, x=0, y_offset=0, x_offset=1) == "b"
+    assert grid.peek_left(y=1, x=1) == "d"
+    assert grid.peek_right(y=1, x=1) == "f"
+    assert grid.peek_up(y=1, x=1) == "b"
+    assert grid.peek_down(y=1, x=1) == "y"
 
 
 def test_peek_linear():
     data = "abc\ndef\nxyz"
     grid = Grid(data)
-    grid.enter(1, 1)
-    assert grid.peek_linear() == [
-        Cell(y=1, x=0, value="d"),
-        Cell(y=1, x=2, value="f"),
-        Cell(y=0, x=1, value="b"),
-        Cell(y=2, x=1, value="y"),
-    ]
+    assert grid.peek_linear(y=1, x=1) == Collection(
+        cells=[
+            Cell(y=1, x=0, value="d"),
+            Cell(y=1, x=2, value="f"),
+            Cell(y=0, x=1, value="b"),
+            Cell(y=2, x=1, value="y"),
+        ]
+    )
 
 
 def test_peek_diagonal():
     data = "abc\ndef\nxyz"
     grid = Grid(data)
-    grid.enter(1, 1)
-    assert grid.peek_diagonal() == [
-        Cell(y=0, x=0, value="a"),
-        Cell(y=0, x=2, value="c"),
-        Cell(y=2, x=0, value="x"),
-        Cell(y=2, x=2, value="z"),
-    ]
+    assert grid.peek_diagonal(y=1, x=1) == Collection(
+        cells=[
+            Cell(y=0, x=0, value="a"),
+            Cell(y=0, x=2, value="c"),
+            Cell(y=2, x=0, value="x"),
+            Cell(y=2, x=2, value="z"),
+        ]
+    )
 
 
 def test_peek_out_of_bounds():
     data = "abc\ndef\nxyz"
     grid = Grid(data)
-    grid.enter(1, 1)
-    out_of_bounds_cell = grid.peek(y_offset=-2, x_offset=0)
+    out_of_bounds_cell = grid.peek(y=1, x=1, y_offset=-2, x_offset=0)
     assert isinstance(out_of_bounds_cell, OutOfBoundsCell)
     assert out_of_bounds_cell == OutOfBoundsCell(y=-1, x=1, value=None)
 
@@ -279,22 +275,21 @@ def test_peek_out_of_bounds():
 def test_line():
     data = "abc\ndef\nxyz"
     grid = Grid(data)
-    grid.enter(0, 0)
-    assert grid.line(y_step=0, x_step=1, distance=3) == Row(
+    assert grid.line(y=0, x=0, y_step=0, x_step=1, distance=3) == Collection(
         cells=[
             Cell(y=0, x=0, value="a"),
             Cell(y=0, x=1, value="b"),
             Cell(y=0, x=2, value="c"),
         ]
     )
-    assert grid.line(y_step=1, x_step=0, distance=3) == Row(
+    assert grid.line(y=0, x=0, y_step=1, x_step=0, distance=3) == Collection(
         cells=[
             Cell(y=0, x=0, value="a"),
             Cell(y=1, x=0, value="d"),
             Cell(y=2, x=0, value="x"),
         ]
     )
-    assert grid.line(y_step=1, x_step=1, distance=3) == Row(
+    assert grid.line(y=0, x=0, y_step=1, x_step=1, distance=3) == Collection(
         cells=[
             Cell(y=0, x=0, value="a"),
             Cell(y=1, x=1, value="e"),
@@ -306,18 +301,16 @@ def test_line():
 def test_line_out_of_bounds():
     data = "abc\ndef\nxyz"
     grid = Grid(data)
-    grid.enter(0, 0)
-    row = grid.line(y_step=-1, distance=2)
-    assert row == Row(
+    collection = grid.line(y=0, x=0, y_step=-1, distance=2)
+    assert collection == Collection(
         cells=[Cell(y=0, x=0, value="a"), OutOfBoundsCell(y=-1, x=0, value=None)]
     )
-    assert row.extends_out_of_bounds()
+    assert collection.extends_out_of_bounds()
 
 
 def test_default_out_of_bounds_value():
     data = "abc\ndef\nxyz"
     grid = Grid(data, out_of_bounds_value="default")
-    grid.enter(0, 0)
-    out_of_bounds_cell = grid.peek_left()
+    out_of_bounds_cell = grid.peek_left(y=0, x=0)
     assert isinstance(out_of_bounds_cell, OutOfBoundsCell)
     assert out_of_bounds_cell == OutOfBoundsCell(y=0, x=-1, value="default")

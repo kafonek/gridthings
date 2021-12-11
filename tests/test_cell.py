@@ -2,8 +2,9 @@ import pytest
 
 from gridthings import Cell
 
-# Cells are a mixin of Pydantic object and functools.total_ordering
-# Tests here prove that Cells compare with each other using their .value
+# Cells represent individual data points in a grid
+# They implement a variety of mathematical dunder methods
+# so that they can be compared, sorted, and manipulated
 
 
 def test_cell_when_equal():
@@ -66,3 +67,14 @@ def test_cell_int_math():
     assert 4 / c1 == 2
 
     assert c1 ** 3 == 8
+
+
+def test_subclass_cell():
+    class MyCell(Cell):
+        extra_arg: bool = True
+
+    cell = MyCell(y=0, x=0, value=1)
+    assert cell.dict() == {"y": 0, "x": 0, "value": 1, "extra_arg": True}
+
+    cell2 = MyCell(y=0, x=0, value=1, extra_arg=False)
+    assert cell2.dict() == {"y": 0, "x": 0, "value": 1, "extra_arg": False}

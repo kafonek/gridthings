@@ -22,10 +22,12 @@ isort = "^5.10.1"
 black = "^21.12b0"
 pytest = "^6.2.5"
 pytest-cov = "^3.0.0"
-bump2version = "^1.0.1"
 
 [tool.poetry.extras]
 examples = ["jupyter", "pandas"]
+
+[tool.poetry-version-plugin]
+source = "init"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

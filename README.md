@@ -63,3 +63,9 @@ This project uses [poetry](https://python-poetry.org/) for dependency management
 4. `pre-commit install --install-hooks`
 
 All pre-commit hooks will run when you `git commit`, even without pushing to Github.  You can manually check with `pre-commit run --all-files`.  If you need to commit even with `pre-commit` throwing erros, you can override with `git commit --no-verify`.
+
+## Releasing
+
+- [ ] Prepare Changelog, move items from Unreleased into new section
+- [ ] Update version with `poetry version` (`patch`, `minor`, `major`)
+- [ ] Create a new release in Github.  An action will publish to pypi.

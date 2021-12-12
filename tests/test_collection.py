@@ -1,6 +1,8 @@
 import math
 import statistics
 
+import pytest
+
 from gridthings import Cell, Collection
 
 # Collections are custom collections.abc.Sequence that are aware
@@ -82,6 +84,8 @@ def test_collection_index_function():
     ]
     collection = Collection(cells=cells)
     assert collection.index("b") == 1
+    with pytest.raises(ValueError):
+        collection.index("d")
 
 
 def test_collection_slice():
@@ -107,3 +111,25 @@ def test_collection_slice():
         Cell(y=0, x=1, value="b"),
         Cell(y=0, x=2, value="c"),
     ]
+
+
+def test_collection_addition():
+    coll1 = Collection(cells=[Cell(y=0, x=0, value=1)])
+    coll2 = Collection(cells=[Cell(y=1, x=1, value=2)])
+    assert coll1 + coll2 == Collection(
+        cells=[
+            Cell(y=0, x=0, value=1),
+            Cell(y=1, x=1, value=2),
+        ]
+    )
+
+
+def test_collection_values():
+    collection = Collection(cells=[Cell(y=0, x=0, value=1)])
+    assert collection.values() == [1]
+
+
+def test_collection_repr():
+    collection = Collection(cells=[Cell(y=0, x=0, value=1)])
+    print(collection)
+    assert repr(collection) == "<Collection [[Cell(y=0, x=0, value=1)]]>"

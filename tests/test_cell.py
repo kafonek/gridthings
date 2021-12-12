@@ -10,7 +10,13 @@ from gridthings import Cell
 def test_cell_when_equal():
     c1 = Cell(y=0, x=0, value="foo")
     c2 = Cell(y=0, x=1, value="foo")
+    # using ==, cell values are equal but actual
+    # cell objects are not considered equal
+    assert c1.value == c2.value
     assert c1 != c2
+    # When > and < operators are used, it's
+    # a pure comparison on values
+    # so c1 == c2 is False, but c1 >= c2 is True
     assert c1 >= c2
     assert c2 >= c1
     assert c1 <= c2
@@ -18,13 +24,46 @@ def test_cell_when_equal():
 
 
 def test_cell_when_unequal():
-    c1 = Cell(y=0, x=0, value="bar")
-    c2 = Cell(y=0, x=1, value="foo")
+    c1 = Cell(y=0, x=0, value=1)
+    c2 = Cell(y=0, x=1, value=2)
     assert c1 != c2
     assert c1 < c2
     assert c1 <= c2
     assert c2 > c1
     assert c2 >= c1
+
+
+def test_cell_against_non_cells():
+    cell = Cell(y=0, x=0, value=2)
+    # __eq__
+    assert cell == 2
+    assert 2 == cell
+    # __ne__
+    assert cell != 0
+    assert 0 != cell
+    # __gte__ / __lte__
+    assert 3 >= cell
+    assert cell <= 3
+    assert 1 <= cell
+    assert cell >= 1
+    # __gt__ / __lt__
+    assert 3 > cell
+    assert cell < 3
+    assert 1 < cell
+    assert cell > 1
+    # __add__
+    assert cell + 2 == 4
+    assert 2 + cell == 4
+    # __sub__
+    assert 2 - cell == 0
+    assert cell - 2 == 0
+    # __mul__
+    assert 3 * cell == 6
+    assert cell * 3 == 6
+    # __truediv__
+    assert cell / 2 == 1
+    # __pow__
+    assert cell ** 3 == 8
 
 
 def test_cell_when_mismatched_datatype():
@@ -67,6 +106,8 @@ def test_cell_int_math():
     assert 4 / c1 == 2
 
     assert c1 ** 3 == 8
+    assert c2 ** c1 == 16
+    assert 2 ** c1 == 4
 
 
 def test_subclass_cell():

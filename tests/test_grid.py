@@ -144,7 +144,6 @@ def test_init_by_str_with_whitespace_and_sep() -> None:
 def test_flatten():
     data = "abc\ndef\nxyz"
     grid = Grid(data)
-    flattened = grid.flatten()
     assert grid.flatten() == Collection(
         cells=[
             Cell(y=0, x=0, value="a"),
@@ -164,6 +163,21 @@ def test_values():
     data = "abc\ndef\nxyz"
     grid = Grid(data)
     assert grid.values() == [["a", "b", "c"], ["d", "e", "f"], ["x", "y", "z"]]
+
+
+def test_regularity():
+    assert Grid("abc\ndef").is_regular
+    assert not Grid("abc\nd").is_regular
+
+
+def test_shape():
+    assert Grid("abc\ndef").shape == (2, 3)
+    assert Grid("abc").shape == (1, 3)
+
+
+def test_repr():
+    assert repr(Grid("abc\ndef")) == "<Grid shape=(2, 3)>"
+    assert repr(Grid("abc\nd")) == "<Grid shape=(irregular)>"
 
 
 # Typed grids -----------------------------------------------------------------
@@ -188,6 +202,12 @@ def test_intgrid_invalid():
     data = "a\n2\n3"
     with pytest.raises(ValueError):
         IntGrid(data)
+
+
+def test_get():
+    grid = IntGrid("123\n456")
+    assert grid.get(0, 0) == Cell(y=0, x=0, value=1)
+    assert grid.get(1, 1) == Cell(y=1, x=1, value=5)
 
 
 def test_get_row_and_col():
@@ -256,6 +276,23 @@ def test_peek_diagonal():
     grid = Grid(data)
     assert grid.peek_diagonal(y=1, x=1) == Collection(
         cells=[
+            Cell(y=0, x=0, value="a"),
+            Cell(y=0, x=2, value="c"),
+            Cell(y=2, x=0, value="x"),
+            Cell(y=2, x=2, value="z"),
+        ]
+    )
+
+
+def test_peek_all():
+    data = "abc\ndef\nxyz"
+    grid = Grid(data)
+    assert grid.peek_all(y=1, x=1) == Collection(
+        cells=[
+            Cell(y=1, x=0, value="d"),
+            Cell(y=1, x=2, value="f"),
+            Cell(y=0, x=1, value="b"),
+            Cell(y=2, x=1, value="y"),
             Cell(y=0, x=0, value="a"),
             Cell(y=0, x=2, value="c"),
             Cell(y=2, x=0, value="x"),

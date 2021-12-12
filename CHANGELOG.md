@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Added
 - `__version__` being dynamically pulled from package metadata
+- Get test coverage up to 100%
 
 ## [0.1.0] - 2020-12-11
 ### Added

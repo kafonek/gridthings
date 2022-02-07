@@ -3,6 +3,9 @@ image:
   file: .gitpod.Dockerfile
 
 tasks:
-  - before: poetry install
+  - before: |
+      curl -sSL https://install.python-poetry.org | python -
+      poetry install
+
   - init: poetry shell
 

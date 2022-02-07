@@ -1,10 +1,8 @@
 # List the start up tasks. Learn more https://www.gitpod.io/docs/config-start-tasks/
-tasks:
-  - before: |
-      curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python -
-      $HOME/.poetry/bin/poetry install
+image:
+  file: .gitpod.dockerfile
 
-  - command: |
-      $HOME/.poetry/bin/poetry shell
-    
+tasks:
+  - init: poetry shell
+
 

@@ -1,8 +1,10 @@
 # List the start up tasks. Learn more https://www.gitpod.io/docs/config-start-tasks/
-image:
-  file: .gitpod.Dockerfile
-
 tasks:
-  - before: /workspace/.pip-modules/bin/poetry install
-  - init: /workspace/.pip-modules/bin/poetry shell
+  - before: |
+      curl -sSL https://install.python-poetry.org | python -
+    env:
+      POETRY_HOME: $HOME/.local
+  - init: |
+      poetry install
+      poetry shell
 

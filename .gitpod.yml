@@ -4,6 +4,4 @@ tasks:
       curl -sSL https://install.python-poetry.org | python -
       poetry install
       poetry shell
-    env:
-      POETRY_HOME: $HOME/.local
 

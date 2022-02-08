@@ -1,5 +1,3 @@
 FROM gitpod/workspace-full
 
-
-
-ENV PATH "$PATH:$HOME/.local/bin"
+RUN curl -sSL https://install.python-poetry.org | python -

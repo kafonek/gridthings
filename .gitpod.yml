@@ -3,9 +3,6 @@ image:
   file: .gitpod.Dockerfile
 
 tasks:
-  - before: |
-      curl -sSL https://install.python-poetry.org | python -
-      poetry install
-
-  - init: poetry shell
+  - before: /workspace/.pip-modules/bin/poetry install
+  - init: /workspace/.pip-modules/bin/poetry shell
 

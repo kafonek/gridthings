@@ -1,10 +1,9 @@
 # List the start up tasks. Learn more https://www.gitpod.io/docs/config-start-tasks/
 tasks:
-  - before: |
-      curl -sSL https://install.python-poetry.org | python -
-    env:
-      POETRY_HOME: $HOME/.local
   - init: |
+      curl -sSL https://install.python-poetry.org | python -
       poetry install
       poetry shell
+    env:
+      POETRY_HOME: $HOME/.local
 

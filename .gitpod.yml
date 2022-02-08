@@ -3,5 +3,6 @@ tasks:
   - init: |
       curl -sSL https://install.python-poetry.org | python -
       poetry install
-      poetry shell
+      
+    command: poetry shell
 

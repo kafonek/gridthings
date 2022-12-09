@@ -58,7 +58,7 @@ The `grid.op` function is useful for traversing parts of the grid and checking s
 
 For example, "count the distance in each direction one could see before sight is blocked by another item that's the same height or taller (or hits the edge of grid)":
 
-```
+```python
 import gridthings
 import operator
 

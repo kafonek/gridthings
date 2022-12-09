@@ -52,6 +52,46 @@ max(grid.peek_diagonal(1, 1))
 >>> IntCell(y=2, x=2, value=9)
 ```
 
+## Op
+
+The `grid.op` function is useful for traversing parts of the grid and checking some `operator` function. It's applicable for problems such as finding peaks and valleys.
+
+For example, "count the distance in each direction one could see before sight is blocked by another item that's the same height or taller (or hits the edge of grid)":
+
+```
+import gridthings
+import operator
+
+text = """
+30373
+25512
+65332
+33549
+35390
+"""
+
+grid = gridthings.IntGrid(text)
+grid
+>>> <IntGrid shape=(5, 5)>
+
+grid.get(y=3, x=2)
+>>> IntCell(y=3, x=2, value=5)
+
+# traverse in each direction, continuing if the original cell is greater value than the next cell
+grid.op_linear(y=3, x=2, op=operator.gt)
+>>> [<Collection [[IntCell(y=3, x=1, value=3), IntCell(y=3, x=0, value=3)]]>,
+     <Collection [[IntCell(y=3, x=3, value=4)]]>,
+     <Collection [[IntCell(y=2, x=2, value=3)]]>,
+     <Collection [[IntCell(y=4, x=2, value=3)]]>]
+
+# Include the cell that caused the operator check fail
+grid.op_linear(y=3, x=2, op=operator.gt, include_break_case=True)
+>>> [<Collection [[IntCell(y=3, x=1, value=3), IntCell(y=3, x=0, value=3)]]>,
+     <Collection [[IntCell(y=3, x=3, value=4), IntCell(y=3, x=4, value=9)]]>,
+     <Collection [[IntCell(y=2, x=2, value=3), IntCell(y=1, x=2, value=5)]]>,
+     <Collection [[IntCell(y=4, x=2, value=3)]]>]
+```
+
 
 ## Development
 

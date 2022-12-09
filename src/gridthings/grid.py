@@ -1,4 +1,5 @@
-from typing import Any, Dict, List, Optional, Tuple, Type, Union
+import operator
+from typing import Any, Callable, Dict, List, Optional, Tuple, Type, Union
 
 from .cell import Cell, OutOfBoundsCell
 from .collection import Collection
@@ -191,3 +192,116 @@ class Grid:
             )
             cells.append(out_cell)
         return self.collection_cls(cells=cells)
+
+    def op(
+        self,
+        y: int,
+        x: int,
+        y_step: int,
+        x_step: int,
+        op: Callable,
+        include_break_case: bool = False,
+    ) -> Collection:
+        """
+        Find cells along a path by checking an operator (`operator.gt`, `operator.lt`, etc).
+        Returns when a cell fails the operator check or when it hits the edge of the grid.
+        Use include_break_case=True to add the failed operator check to the return list.
+
+        Useful for situations such as "Count the number of values immediately to the right
+        that are shorter than the current cell value."
+        """
+        cell = self.get(y, x)
+        cells = []
+        while True:
+            next_cell = self.peek(y=y, x=x, y_offset=y_step, x_offset=x_step)
+            if isinstance(next_cell, OutOfBoundsCell):
+                break
+            if not op(cell.value, next_cell.value):
+                if include_break_case:
+                    cells.append(next_cell)
+                break
+            cells.append(next_cell)
+            y = next_cell.y
+            x = next_cell.x
+        return self.collection_cls(cells=cells)
+
+    def op_left(
+        self, y: int, x: int, op: Callable, include_break_case: bool = False
+    ) -> Collection:
+        "Return a Collection of cells to the left of a given y/x position"
+        return self.op(
+            y=y, x=x, y_step=0, x_step=-1, op=op, include_break_case=include_break_case
+        )
+
+    def op_right(
+        self, y: int, x: int, op: Callable, include_break_case: bool = False
+    ) -> Collection:
+        "Return a Collection of cells to the right of a given y/x position"
+        return self.op(
+            y=y, x=x, y_step=0, x_step=1, op=op, include_break_case=include_break_case
+        )
+
+    def op_up(
+        self, y: int, x: int, op: Callable, include_break_case: bool = False
+    ) -> Collection:
+        "Return a Collection of cells above a given y/x position"
+        return self.op(
+            y=y, x=x, y_step=-1, x_step=0, op=op, include_break_case=include_break_case
+        )
+
+    def op_down(
+        self, y: int, x: int, op: Callable, include_break_case: bool = False
+    ) -> Collection:
+        "Return a Collection of cells below a given y/x position"
+        return self.op(
+            y=y, x=x, y_step=1, x_step=0, op=op, include_break_case=include_break_case
+        )
+
+    def op_linear(
+        self,
+        y: int,
+        x: int,
+        op: Callable,
+        include_break_case: bool = False,
+    ) -> List[Collection]:
+        "Return a Collection of cells in all directions from a given y/x position"
+        collections = [
+            self.op_left(y=y, x=x, op=op, include_break_case=include_break_case),
+            self.op_right(y=y, x=x, op=op, include_break_case=include_break_case),
+            self.op_up(y=y, x=x, op=op, include_break_case=include_break_case),
+            self.op_down(y=y, x=x, op=op, include_break_case=include_break_case),
+        ]
+        return collections
+
+    def op_diagonal(
+        self,
+        y: int,
+        x: int,
+        op: Callable,
+        include_break_case: bool = False,
+    ) -> List[Collection]:
+        "Return a Collection of cells in all directions from a given y/x position"
+        collections = [
+            self.op_left(y=y, x=x, op=op, include_break_case=include_break_case),
+            self.op_right(y=y, x=x, op=op, include_break_case=include_break_case),
+            self.op_up(y=y, x=x, op=op, include_break_case=include_break_case),
+            self.op_down(y=y, x=x, op=op, include_break_case=include_break_case),
+        ]
+        return collections
+
+    def op_all(
+        self,
+        y: int,
+        x: int,
+        op: Callable,
+        include_break_case: bool = False,
+    ) -> List[Collection]:
+        "Return a Collection of cells in all directions from a given y/x position"
+        collections = []
+        collections.extend(
+            self.op_linear(y=y, x=x, op=op, include_break_case=include_break_case)
+        )
+        collections.extend(
+            self.op_diagonal(y=y, x=x, op=op, include_break_case=include_break_case)
+        )
+        return collections

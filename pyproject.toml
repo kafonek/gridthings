@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "gridthings"
-version = "0.1.1"
+version = "0.1.2"
 description = "Python library for working with Grid-like structures (e.g. tic-tac-toe)"
 authors = ["Matt Kafonek <matt.kafonek@noteable.io>"]
 homepage = "https://github.com/kafonek/gridthings"

@@ -95,6 +95,9 @@ class Cell(BaseModel):
     def __rtruediv__(self, other: Any) -> Any:
         return other / self.value
 
+    def __hash__(self) -> int:
+        return hash((self.y, self.x))
+
 
 class OutOfBoundsCell(Cell):
     """
